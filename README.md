@@ -13,3 +13,6 @@ chmod +x deploy.sh
 sudo ./deploy.sh
 
 默认使用3000端口部署网页
+
+示例网址
+154.36.180.147:3000
