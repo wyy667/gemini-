@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini密钥测活测压工具</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="glass-header">
+            <div class="header-left">
+                <h1>🔑 Gemini密钥测活测压工具</h1>
+                <p>专业的Gemini API密钥测试和管理工具</p>
+            </div>
+            <div class="header-right">
+                <a href="https://xiaoyi.ink" target="_blank" class="ad-banner">
+                    <div class="ad-content">
+                        <div class="ad-title">欢迎游玩我的项目</div>
+                        <div class="ad-subtitle">小懿AI</div>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="test">密钥测活</button>
+            <button class="tab-btn" data-tab="stress">压力测试</button>
+        </nav>
+
+        <div id="test-panel" class="tab-panel active">
+            <div class="config-section">
+                <h3>配置设置</h3>
+                <div class="form-group">
+                    <label for="test-endpoint">API接口地址:</label>
+                    <input type="text" id="test-endpoint" value="https://generativelanguage.googleapis.com/v1beta/openai" placeholder="请输入API接口地址">
+                </div>
+                <div class="form-group">
+                    <label for="test-model">模型名称:</label>
+                    <input type="text" id="test-model" value="gemini-2.5-flash-lite" placeholder="请输入模型名称">
+                </div>
+                <button id="confirm-config" class="btn btn-primary">确认配置</button>
+            </div>
+
+            <div id="keys-section" class="keys-section" style="display: none;">
+                <h3>密钥输入</h3>
+                <div class="form-group">
+                    <label for="keys-input">请输入密钥 (一行一个):</label>
+                    <textarea id="keys-input" rows="10" placeholder="请输入您的API密钥，每行一个"></textarea>
+                </div>
+                
+                <div class="settings-group">
+                    <div class="form-group">
+                        <label for="concurrency">并发测试条数:</label>
+                        <input type="number" id="concurrency" value="5" min="1" max="50">
+                        <span class="hint">(最大50)</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="retries">重试次数:</label>
+                        <input type="number" id="retries" value="1" min="0" max="3">
+                        <span class="hint">(最大3)</span>
+                    </div>
+                </div>
+                
+                <button id="start-test" class="btn btn-success">开始测试</button>
+    
+                <div id="test-progress" class="test-progress" style="display: none;">
+                    <div class="progress-header">
+                        <h4>测活进度</h4>
+                        <div class="progress-stats">
+                            <span>已测试: <span id="tested-count">0</span></span>
+                            <span>总数量: <span id="total-test-count">0</span></span>
+                            <span>进度: <span id="test-progress-percent">0%</span></span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="test-progress-fill" class="progress-fill"></div>
+                    </div>
+                    <div class="progress-status">
+                        <span id="current-test-status">准备开始测试...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="results-section" class="results-section" style="display: none;">
+                <h3>测试结果</h3>
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-label">总密钥数:</span>
+                        <span id="total-keys" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">有效密钥:</span>
+                        <span id="valid-keys" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">无效密钥:</span>
+                        <span id="invalid-keys" class="stat-value">0</span>
+                    </div>
+                </div>
+
+                <div class="results-tabs">
+                    <button class="result-tab-btn active" data-result="valid">有效密钥</button>
+                    <button class="result-tab-btn" data-result="invalid">无效密钥</button>
+                </div>
+
+                <div id="valid-results" class="result-content active">
+                    <div class="result-header">
+                        <h4>有效密钥列表</h4>
+                        <button id="copy-valid" class="btn btn-small">复制所有</button>
+                    </div>
+                    <div id="valid-keys-list" class="keys-list"></div>
+                </div>
+
+                <div id="invalid-results" class="result-content">
+                    <div class="result-header">
+                        <h4>无效密钥分类</h4>
+                    </div>
+                    <div id="invalid-keys-list" class="keys-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="stress-panel" class="tab-panel">
+            <div class="config-section">
+                <h3>压力测试配置</h3>
+                <div class="form-group">
+                    <label for="stress-endpoint">API接口地址:</label>
+                    <input type="text" id="stress-endpoint" value="https://generativelanguage.googleapis.com/v1beta/openai" placeholder="请输入API接口地址">
+                </div>
+                <div class="form-group">
+                    <label for="stress-model">模型名称:</label>
+                    <input type="text" id="stress-model" value="gemini-2.5-pro" placeholder="请输入模型名称">
+                </div>
+
+                <button id="confirm-stress-config" class="btn btn-primary">确认配置</button>
+            </div>
+
+            <div id="stress-test-section" class="stress-test-section" style="display: none;">
+                <h3>压力测试</h3>
+                <div class="form-group">
+                    <label for="stress-api-key">API密钥:</label>
+                    <input type="password" id="stress-api-key" placeholder="请输入要测试的API密钥">
+                </div>
+                
+                <div class="stress-controls">
+                    <button id="start-stress-test" class="btn btn-success">开始后台测压</button>
+                    <button id="query-stress-test" class="btn btn-primary">查询测压状态</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="stress-modal" class="modal" style="display: none;">
+        <div class="modal-content glass-modal">
+            <div class="modal-header">
+                <h3>测压状态</h3>
+                <button id="close-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-content">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="stop-stress-test" class="btn btn-danger" style="display: none;">中断测压</button>
+                <button id="close-modal-btn" class="btn btn-primary">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="announcement-modal" class="modal" style="display: none;">
+        <div class="modal-content glass-modal announcement-modal">
+            <div class="modal-header">
+                <h3>📢 系统公告</h3>
+                <button id="close-announcement" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="announcement-content">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="close-announcement-btn" class="btn btn-primary">我知道了</button>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
