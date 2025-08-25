@@ -306,11 +306,11 @@ app.post('/api/stress-test/query', async (req, res) => {
         // 计算密钥评分
         let rating = '';
         if (testData.status === 'completed') {
-            if (testData.successCount <= 60) {
+            if (testData.successCount <= 30) {
                 rating = '绝壁超开密钥';
-            } else if (testData.successCount <= 80) {
+            } else if (testData.successCount <= 40) {
                 rating = '可能是超开密钥';
-            } else if (testData.successCount <= 100) {
+            } else if (testData.successCount <= 50) {
                 rating = '密钥合格';
             } else {
                 rating = '很强的密钥';
